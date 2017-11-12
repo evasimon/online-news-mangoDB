@@ -1,5 +1,5 @@
 {
-  "name": "online-news-mangodb",
+  "name": "online-recipes-mangodb",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/evasimon/online-news-mangoDB.git"
+    "url": "git+https://github.com/evasimon/online-recipes-mangoDB.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/evasimon/online-news-mangoDB/issues"
+    "url": "https://github.com/evasimon/online-recipes-mangoDB/issues"
   },
-  "homepage": "https://github.com/evasimon/online-news-mangoDB#readme",
+  "homepage": "https://github.com/evasimon/online-recipes-mangoDB#readme",
   "dependencies": {
     "body-parser": "^1.18.2",
     "cheerio": "^1.0.0-rc.2",
