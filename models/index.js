@@ -1,4 +1,4 @@
-// exports an object containing all of the models
+// exports the object containing all of the models
 
 module.exports = {
   Recipe: require("./Recipe"),

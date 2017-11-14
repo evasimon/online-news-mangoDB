@@ -9,8 +9,8 @@ var ReviewSchema = new Schema({
   body: String
 });
 
-// creates the model from the above schema, using mongoose's model method
+// This creates our model from the above schema, using mongoose's model method
 var Review = mongoose.model("Review", ReviewSchema);
 
-// Export the Note model
+// Export the Review model
 module.exports = Review;

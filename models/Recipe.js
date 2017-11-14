@@ -15,12 +15,27 @@ var RecipeSchema = new Schema({
     type: String,
     required: true
   },
+  // `description` is required and of type String
+  description: {
+    type: String,
+    required: true
+  },
+  // `img` is required and of type String
+  img: {
+    type: String,
+    required: true
+  },
+  // `saved` is false by default and of type Boolean
+  saved: {
+    type: Boolean,
+    default: false
+  },
   // populates the Recipe with a corresponding Review
   // stores a Review id, (ref property) links the ObjectId to the Review model 
-  review: {
+  reviews: [{
     type: Schema.Types.ObjectId,
     ref: "Review"
-  }
+  }]
 });
 
 // creates the model from the above schema, using mongoose's model method
