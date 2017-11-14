@@ -1,33 +1,33 @@
 var express = require("express");
 var bodyParser = require("body-parser");
-// var logger = require("morgan");
 var mongoose = require("mongoose");
 
-// Our scraping tools
-// Axios is a promised-based http library, similar to jQuery's Ajax method
-// It works on the client and on the server
+// scraping tools : Axios is a promised-based http library, similar to jQuery's Ajax method
+// works on the client and on the server
 var axios = require("axios");
 var cheerio = require("cheerio");
 
-// Require all models
+// requires all models
 var db = require("./models");
 
+// sets env PORT
 var PORT = process.env.PORT || 8080;
 
-// Initialize Express
+// initializes Express
 var app = express();
 
-// Configure middleware
+// initiate handlebars with default layout
+var exphbs = require("express-handlebars");
+app.engine("handlebars", exphbs({ defaultLayout: "main" }));
+app.set("view engine", "handlebars");
 
-// Use morgan logger for logging requests
-// app.use(logger("dev"));
-// Use body-parser for handling form submissions
+// uses body-parser for handling form submissions
 app.use(bodyParser.urlencoded({ extended: false }));
-// Use express.static to serve the public folder as a static directory
+// uses express.static to serve the public folder as a static directory
 app.use(express.static("public"));
 
-// Set mongoose to leverage built in JavaScript ES6 Promises
-// Connect to the Mongo DB
+// sets mongoose to leverage built in JavaScript ES6 Promises
+// connect to the Mongo DB
 mongoose.Promise = Promise;
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/onlineRecipes";
 mongoose.connect(MONGODB_URI, {
@@ -36,108 +36,159 @@ mongoose.connect(MONGODB_URI, {
 
 // Routes
 
-// A GET route for scraping the echojs website
-app.get("/scrape", function (req, res) {
-    // First, we grab the body of the html with request
-    axios.get("http://allrecipes.com/recipes/").then(function (response) {
-        // Then, we load that into cheerio and save it to $ for a shorthand selector
+// A POST route for scraping the blueapron website
+app.post("/scrape", function (req, res) {
+    // grabs the body of the html with request
+    axios.get("https://www.blueapron.com/cookbook").then(function (response) {
+        // loads that into cheerio and saves it to $ for a shorthand selector
         var $ = cheerio.load(response.data);
-        var array = [];
 
-        // Now, we grab every h2 within an article tag, and do the following:
-        $("article.fixed-recipe-card").each(function (i, element) {
-            // Save an empty result object
+        // grabs every div with .recipe-thumb class and does the following:
+        $("div.recipe-thumb").each(function (i, element) {
+            // saves an empty result object
             var result = {};
 
-            // Add the text and href of every link, and save them as properties of the result object
+            // adds the text and href of every link, and saves them as properties of the result object
             result.title = $(this)
-                .find("h3 a span")
+                .find("h3")
                 .text();
-            result.link = $(this)
+            result.link = "https://www.blueapron.com" + $(this)
                 .find("a")
                 .attr("href");
             result.description = $(this)
-                .find("a .fixed-recipe-card__description")
+                .find("h6")
                 .text();
             result.img = $(this)
-                .find("img.fixed-recipe-card__img")
-                .attr("data-original-src");
-            array.push(result)
+                .find("img")
+                .attr("src");
 
+            // checks if title, link, descr, img exists
             if (result.title && result.link && result.description && result.img) {
-                // Create a new Article using the `result` object built from scraping
-                db.Recipe
-                    .create(result)
-                    .then(function (dbRecipe) {
-                        // If we were able to successfully scrape and save an Article, send a message to the client
-                        res.send("Scrape Complete");
-                    })
-                    .catch(function (err) {
-                        // If an error occurred, send it to the client
-                        res.json(err);
-                    });
+                // create a new Recipe using the `result` object built from scraping
+                db.Recipe.findOne({ link: result.link }).then(function (data) {
+                    // if recipe does not exist
+                    if (!data) {
+                        // then creates a new recipe
+                        db.Recipe
+                            .create(result)
+                            .then(function (dbRecipe) {
+                                // sends a succesful message to the client
+                                res.send("Scrape Complete");
+                            })
+                            .catch(function (err) {
+                                // sends error msg to the client
+                                res.json(err);
+                            });
+                    }
+
+                });
+
             }
         });
-        // res.json(array);
-
+        // redirects to /
+        res.redirect('/');
     });
 });
 
-// Route for getting all Articles from the db
-app.get("/articles", function (req, res) {
-    // TODO: Finish the route so it grabs all of the articles
-    db.Article.find({}).then(function (data) {
-        // console.log(data)
-        res.json(data)
-    })
+// Route for getting all Recipes from the db
+app.get("/", function (req, res) {
+    // grabs all of the recipes
+    db.Recipe
+        .find({})
+        .then(function (data) {
+            var result = {};
+            result.recipes = data;
+            // renders index.handlebars
+            res.render("index", result);
+        });
 });
 
-// Route for grabbing a specific Article by id, populate it with it's note
-app.get("/articles/:id", function (req, res) {
-    var articleId = req.params.id;
-    console.log(articleId)
-
-    // TODO
-    // ====
-    // Finish the route so it finds one article using the req.params.id,
-    // and run the populate method with "note",
-    // then responds with the article with the note included
-
-    db.Article.findOne({ _id: articleId }).populate("note").then(function (data) {
-        // console.log(data)
-        res.json(data)
-    })
+// Route for getting all the saved Recipes from the db
+app.get("/saved-recipes", function (req, res) {
+    // grabs all of the recipes that are set to saved: true
+    db.Recipe
+        .find({ saved: true })
+        .then(function (data) {
+            // console.log(data)
+            var result = {};
+            result.recipes = data;
+            // renderes my-recipes.handlebars
+            res.render("my-recipes", result);
+        })
 });
 
-// Route for saving/updating an Article's associated Note
-app.post("/articles/:id", function (req, res) {
-    var articleId = req.params.id;
+// Route for grabbing a specific Recipe by id, populate it with its review
+app.get("/recipes/:id", function (req, res) {
+    var recipeId = req.params.id;
 
-    // TODO
-    // ====
-    // save the new note that gets posted to the Notes collection
-    db.Note
+    // finds one recipe using the req.params.id,
+    db.Recipe
+        .findOne({ _id: recipeId })
+        // runs the populate method with "reviews",
+        .populate("reviews")
+        .then(function (data) {
+            // then responds with the recipe with the reviews included
+            res.json(data)
+        })
+});
+
+// Route for saving/updating a Recipe's associated Review
+app.post("/recipes/:id", function (req, res) {
+    // grabs the specific Recipe by id
+    var recipeId = req.params.id;
+    // saves the new review that gets posted to the Review collection
+    db.Review
         .create(req.body)
-        .then(function (dbNote) {
-            // If a Note was created successfully, find one User (there's only one) and push the new Note's _id to the User's `notes` array
-            // { new: true } tells the query that we want it to return the updated User -- it returns the original by default
-            // Since our mongoose query returns a promise, we can chain another `.then` which receives the result of the query
-            return db.Article.findOneAndUpdate({ _id: articleId }, { note: dbNote._id }, { new: true });
+        .then(function (dbReview) {
+            return db.Recipe
+                .findOneAndUpdate({ _id: recipeId }, { $push: { reviews: dbReview._id } }, { new: true })
+                .populate("reviews");
         })
-        .then(function (dbUser) {
-            // If the User was updated successfully, send it back to the client
-            res.json(dbUser);
+        .then(function (dbRecipe) {
+            res.json(dbRecipe);
         })
-    // then find an article from the req.params.id
-
-    // and update it's "note" property with the _id of the new note
-    // db.Article.find({ _id: articleId }).populate("notes").then(function (data) {
-    //   // console.log(data)
-    //   res.json(data)
-    // })
 });
 
-// Start the server
+// Route for updating saved prop. for a specific Recipe
+app.put("/recipes/:id", function (req, res) {
+    // grabs the specific Recipe by id
+    var recipeId = req.params.id;
+    // updates the recipe saved to true
+    db.Recipe
+        .findOneAndUpdate({ _id: recipeId }, { saved: true })
+        .then(function (data) {
+            console.log('On Server: recipe saved')
+            res.json(data)
+        })
+});
+
+// Route for updating a Saved Recipe to false
+app.put("/recipes/delete/:id", function (req, res) {
+    // grabs the specific Recipe by id
+    var recipeId = req.params.id;
+    // updates the Recipe saved to false
+    db.Recipe
+        .findOneAndUpdate({ _id: recipeId }, { saved: false })
+        .then(function (data) {
+            console.log('On Server: recipe deleted')
+            res.json(data)
+        })
+});
+
+// Route for deleting a review specific to a Recipe
+app.delete("/review/delete/:id", function (req, res) {
+    // grabs the specific Review by id
+    var reviewId = req.params.id;
+    // removes it from the Review Collecition
+    db.Review
+        .findOneAndRemove({ _id: reviewId })
+        .then(function (data) {
+            console.log('On Server: review deleted')
+            res.json(data)
+        })
+});
+
+// starts the server
 app.listen(PORT, function () {
     console.log("App running on port " + PORT + "!");
 });
