@@ -11,7 +11,8 @@
 			<p class="card-text">{{this.description}}</p>
 		</div>
 		<div class="card-footer">
-			<button type="button" class="btn btn-primary saveBtn" data-id="{{this._id}}">Save Recipe</button>
+			<button type="button" class="btn {{#if this.saved}} btn-success {{/if}} {{#unless this.saved}} btn-primary {{/unless}} saveBtn"
+			 data-id="{{this._id}}">{{#if this.saved}} Saved {{/if}} {{#unless this.saved}} Save Recipe {{/unless}}</button>
 		</div>
 	</div>
 </div>

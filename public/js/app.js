@@ -2,12 +2,18 @@
 $(document).on('click', '.saveBtn', function () {
     // grabs the id associated with the recipe from the save button
     var recipeId = $(this).attr('data-id');
+    var btn = $(this);
+
     // sends a PUT request to save the recipe
     $.ajax({
         method: 'PUT',
         url: '/recipes/' + recipeId
     }).done(function (data) {
         console.log('Recipe Saved!')
+        // marks button saved
+        btn.removeClass('btn-primary');
+        btn.addClass('btn-success');
+        btn.text('Saved');
     })
 })
 
@@ -15,14 +21,16 @@ $(document).on('click', '.saveBtn', function () {
 $(document).on('click', '.deleteBtn', function () {
     // grabs the id associated with the recipe from the delete button
     var recipeId = $(this).attr('data-id');
-    // removes the whole recipe container
-    $(this).closest('.recipe-container').remove();
+    var btn = $(this);
+
     // sends a PUT request to delete the saved recipe
     $.ajax({
         method: 'PUT',
         url: '/recipes/delete/' + recipeId
     }).done(function (data) {
         console.log('Recipe Removed!')
+        // removes the whole recipe container
+        btn.closest('.recipe-container').remove();
     })
 
 })
@@ -88,8 +96,7 @@ $(document).on('click', '#saveReview', function () {
 $(document).on('click', '.delete-review', function () {
     // grabs the id associated with the review from the x button
     var reviewId = $(this).attr('data-id');
-    // removes the review container
-    $(this).parent().remove();
+    var btn = $(this);
     // makes an ajax call to request deleting a review 
     $.ajax({
         method: 'DELETE',
@@ -97,5 +104,7 @@ $(document).on('click', '.delete-review', function () {
     })
         .done(function (data) {
             console.log(data, 'Review is Deleted!');
+            // removes the review container
+            btn.parent().remove();
         });
 })
