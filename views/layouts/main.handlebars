@@ -16,13 +16,18 @@
 <body>
 	<header class="mt-3 mb-5">
 		<div class="container row">
-			<div class="col-off-2 col-md-2">
+			<div class="col-md-8">
+				<h1>
+					<a href="/">The Blue Chef</a>
+				</h1>
+			</div>
+			<div class="col-md-2 text-right">
+				<a class="btn btn-primary" href="/saved-recipes">My Recipes</a>
+			</div>
+			<div class="col-md-2">
 				<form class="scrape-btn" method="POST" action="/scrape">
 					<button type="submit" class="btn btn-primary">Scrape Recipe</button>
 				</form>
-			</div>
-			<div class="col-md-2">
-				<a class="btn btn-primary" href="/saved-recipes">My Recipes</a>
 			</div>
 		</div>
 	</header>
