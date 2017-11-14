@@ -1,0 +1,50 @@
+{{#each recipes}}
+<div class="col-md-4 mb-5 recipe-container">
+    <div class="card" data-id="{{this._id}}">
+        <a href="{{this.link}}" target="_blank">
+            <img class="card-img-top" src="{{this.img}}" alt="Card image cap">
+        </a>
+        <div class="card-body">
+            <a href="{{this.link}}" target="_blank">
+                <h4 class="card-title">{{this.title}}</h4>
+            </a>
+            <p class="card-text">{{this.description}}</p>
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-md-6">
+                    <button type="button" class="btn btn-success reviewBtn" data-id="{{this._id}}" data-toggle="modal" data-target="#myModal">Reviews</button>
+                </div>
+                <div class="col-md-6">
+                    <button type="button" class="btn btn-danger deleteBtn" data-id="{{this._id}}">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{/each}}
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Reviews for
+                    <span id='reviewTitle'></span>
+                </h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="comment">Write a review:</label>
+                    <textarea class="form-control" rows="5" id="bodyinput" name='body'></textarea>
+                    <button id="saveReview" type="button" class="btn btn-success reviewBtn mt-3" data-id="{{this._id}}" data-toggle="modal" data-target="#myModal">Submit Review</button>
+                </div>
+                <ul id="reviews" class="list-group"></ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,18 @@
+{{#each recipes}}
+<div class="col-md-4 mb-5">
+	<div class="card" data-id="{{this._id}}">
+		<a href="{{this.link}}" target="_blank">
+			<img class="card-img-top" src="{{this.img}}" alt="Card image cap">
+		</a>
+		<div class="card-body">
+			<a href="{{this.link}}" target="_blank">
+				<h4 class="card-title">{{this.title}}</h4>
+			</a>
+			<p class="card-text">{{this.description}}</p>
+		</div>
+		<div class="card-footer">
+			<button type="button" class="btn btn-primary saveBtn" data-id="{{this._id}}">Save Recipe</button>
+		</div>
+	</div>
+</div>
+{{/each}}
